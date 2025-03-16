@@ -42,9 +42,16 @@ struct CreateCategoryView: View {
             }
         }
         .navigationTitle("Add Category")
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button("Dismiss") {
+                    dismiss()
+                }
+            }
+            
+            ToolbarItem(placement: .primaryAction) {
+                Button("save") {
                     dismiss()
                 }
             }
@@ -58,7 +65,6 @@ struct CreateCategoryView: View {
         title = ""
         do {
             try context.save()
-            dismiss()
         } catch {
             print("Failed to save context: \(error.localizedDescription)")
         }

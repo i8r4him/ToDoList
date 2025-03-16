@@ -6,13 +6,17 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct CreateTodoView: View {
     
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var context
     
+    @Query private var categories: [Category]
+    
     @State private var item: ToDoItem = ToDoItem()
+    @State private var selectedCategory: Category?
     
     var body: some View {
         List {
@@ -27,22 +31,44 @@ struct CreateTodoView: View {
                 
             }
             
-            Button("Create Task") {
-                withAnimation {
-                    context.insert(item)
+            Section(header: Text("Category")) {
+                Picker("Select Category", selection: $selectedCategory) {
+                    ForEach(categories) { category in
+                        Text(category.title)
+                            .tag(category as Category?)
+                    }
+                    Text("None")
+                        .tag(nil as Category?)
                 }
+            }
+            
+            Button("Create Task") {
+                save()
                 dismiss()
             }
         }
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button(role: .destructive) {
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Cancel") {
                     dismiss()
-                } label: {
-                    Text("Cancel")
                 }
             }
+            ToolbarItem(placement: .primaryAction) {
+                Button("Save") {
+                    save()
+                    dismiss()
+                }
+                .disabled(item.title.isEmpty)
+            }
         }
+    }
+}
+
+private extension CreateTodoView {
+    func save() {
+        context.insert(item)
+        item.category = selectedCategory
+        selectedCategory?.items?.append(item)
     }
 }
 

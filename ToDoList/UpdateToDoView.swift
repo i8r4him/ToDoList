@@ -15,23 +15,38 @@ struct UpdateToDoView: View {
     @Bindable var item: ToDoItem
     
     var body: some View {
-        List {
-            Section(header: Text("Task Details")) {
-                TextField("Enter task name", text: $item.title)
-                DatePicker("Select Date", selection: $item.timestamp)
-
-            }
-            
-            Section(header: Text("Date & Priority")) {
-                Toggle("Mark as Important", isOn: $item.isCritical)
+        NavigationStack {
+            List {
+                Section(header: Text("Task Details")) {
+                    TextField("Enter task name", text: $item.title)
+                    
+                    DatePicker("Select Date", selection: $item.timestamp, displayedComponents: .date)
+                        .datePickerStyle(.compact)
+                }
                 
+                Section(header: Text("Priority & Status")) {
+                    Toggle("Mark as Important", isOn: $item.isCritical)
+                        .tint(.orange)
+                }
+                
+                Section {
+                    Button(action: {
+                        dismiss()
+                    }) {
+                        Text("Update Task")
+                    }
+                }
             }
-            
-            Button("Update Task") {
-                dismiss()
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
             }
+            .navigationTitle("Update ToDo")
+            .navigationBarTitleDisplayMode(.inline)
         }
-        .navigationTitle("Update ToDo")
     }
 }
 
