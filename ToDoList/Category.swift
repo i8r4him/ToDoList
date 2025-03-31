@@ -20,3 +20,13 @@ class Category {
         self.title = title
     }
 }
+
+extension Category {
+    static var defaults: [Category] {
+        [
+            .init(title: "🙇🏾‍♂️ Study"),
+            .init(title: "🤝 Routine"),
+            .init(title: "🏠 Family")
+        ]
+    }
+}

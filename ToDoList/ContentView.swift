@@ -17,24 +17,30 @@ struct ContentView: View {
     @State private var showCreateCategory = false
     @State private var searchQuery = ""
     
+    enum SortType: String, CaseIterable, Identifiable {
+        case title, date, category
+        var id: String { rawValue }
+    }
+
+    @State private var sortType: SortType = .date
+    @State private var sortAscending: Bool = true
+    
     @Query(filter: #Predicate { (item: ToDoItem) in
         item.isCompleted == false
-    }, sort: \.timestamp) private var items: [ToDoItem]
+    }) private var unsortedItems: [ToDoItem]
     
     var filteredItems: [ToDoItem] {
-        if searchQuery.isEmpty {
-            return items
-        }
-        return items.filter {
-            $0.title.localizedCaseInsensitiveContains(searchQuery) ||
-            $0.category?.title.localizedCaseInsensitiveContains(searchQuery) == true
-        }
+    let filtered = searchQuery.isEmpty ? unsortedItems : unsortedItems.filter {
+        $0.title.localizedCaseInsensitiveContains(searchQuery) ||
+        $0.category?.title.localizedCaseInsensitiveContains(searchQuery) == true
+    }
+    return sortedItems(from: filtered)
     }
     
     var body: some View {
         NavigationStack {
             Group {
-                if items.isEmpty && searchQuery.isEmpty {
+                if unsortedItems.isEmpty && searchQuery.isEmpty {
                     ContentUnavailableView("No Task Found", systemImage: "tray")
                 } else {
                     List {
@@ -101,6 +107,7 @@ struct ContentView: View {
                 }
             }
             .navigationTitle("To Do List")
+            .animation(.easeIn, value: filteredItems)
             .safeAreaInset(edge: .bottom, alignment: .leading) {
                 Button(action: {
                     showCreate.toggle()
@@ -112,10 +119,28 @@ struct ContentView: View {
                 .padding()
             }
             .toolbar {
-                Button(action: {
-                    showCreateCategory = true
-                }) {
-                    Label("Categories", systemImage: "folder.badge.plus")
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    Button(action: {
+                        showCreateCategory = true
+                    }) {
+                        Label("Categories", systemImage: "folder.badge.plus")
+                    }
+
+                    Menu {
+                        Picker("Sort By", selection: $sortType) {
+                            Label("Title", systemImage: "textformat").tag(SortType.title)
+                            Label("Date", systemImage: "calendar").tag(SortType.date)
+                            Label("Category", systemImage: "folder").tag(SortType.category)
+                        }
+                        Divider()
+                        Button(action: {
+                            sortAscending.toggle()
+                        }) {
+                            Label("Order: \(sortAscending ? "Ascending" : "Descending")", systemImage: sortAscending ? "arrow.down" : "arrow.up")
+                        }
+                    } label: {
+                        Label("Sort", systemImage: "ellipsis.circle")
+                    }
                 }
             }
             .searchable(text: $searchQuery, prompt: "Search for a task or a category")
@@ -142,6 +167,31 @@ struct ContentView: View {
                 }
             }
         }
+    }
+}
+
+private extension ContentView {
+    func sortedItems(from list: [ToDoItem]) -> [ToDoItem] {
+        switch sortType {
+        case .title:
+            return list.sorted {
+                sortAscending ? $0.title < $1.title : $0.title > $1.title
+            }
+        case .date:
+            return list.sorted {
+                sortAscending ? $0.timestamp < $1.timestamp : $0.timestamp > $1.timestamp
+            }
+        case .category:
+            return list.sorted {
+                let lhs = $0.category?.title ?? ""
+                let rhs = $1.category?.title ?? ""
+                return sortAscending ? lhs < rhs : lhs > rhs
+            }
+        }
+    }
+
+    var items: [ToDoItem] {
+        sortedItems(from: unsortedItems)
     }
 }
 
