@@ -10,9 +10,13 @@ import SwiftData
 
 struct UpdateToDoView: View {
     
+    @State private var selectedCategory: Category?
+    
     @Environment(\.dismiss) var dismiss
     
     @Bindable var item: ToDoItem
+    
+    @Query private var categories: [Category]
     
     var body: some View {
         NavigationStack {
@@ -29,8 +33,24 @@ struct UpdateToDoView: View {
                         .tint(.orange)
                 }
                 
+                Section(header: Text("Category")) {
+                    if (categories.isEmpty) {
+                        ContentUnavailableView("No Category Found", systemImage: "archivebox")
+                    } else {
+                        Picker("Select Category", selection: $selectedCategory) {
+                            ForEach(categories) { category in
+                                Text(category.title)
+                                    .tag(category as Category?)
+                            }
+                            Text("None")
+                                .tag(nil as Category?)
+                        }
+                    }
+                }
+                
                 Section {
                     Button(action: {
+                        item.category = selectedCategory
                         dismiss()
                     }) {
                         Text("Update Task")
@@ -46,6 +66,9 @@ struct UpdateToDoView: View {
             }
             .navigationTitle("Update ToDo")
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear(perform: {
+                selectedCategory = item.category
+            })
         }
     }
 }

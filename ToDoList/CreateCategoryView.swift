@@ -27,18 +27,23 @@ struct CreateCategoryView: View {
             }
 
             Section("Categories") {
-                ForEach(categories) { category in
-                    Text(category.title)
-                        .swipeActions {
-                            Button(role: .destructive) {
-                                withAnimation {
-                                    context.delete(category)
+                if categories.isEmpty {
+                    ContentUnavailableView("No Category Found", systemImage: "archivebox")
+                } else {
+                    ForEach(categories) { category in
+                        Text(category.title)
+                            .swipeActions {
+                                Button(role: .destructive) {
+                                    withAnimation {
+                                        context.delete(category)
+                                    }
+                                } label: {
+                                    Label("Delete", systemImage: "trash.fill")
                                 }
-                            } label: {
-                                Label("Delete", systemImage: "trash.fill")
                             }
-                        }
+                    }
                 }
+                
             }
         }
         .navigationTitle("Add Category")

@@ -32,13 +32,17 @@ struct CreateTodoView: View {
             }
             
             Section(header: Text("Category")) {
-                Picker("Select Category", selection: $selectedCategory) {
-                    ForEach(categories) { category in
-                        Text(category.title)
-                            .tag(category as Category?)
+                if (categories.isEmpty) {
+                    ContentUnavailableView("No Category Found", systemImage: "archivebox")
+                } else {
+                    Picker("Select Category", selection: $selectedCategory) {
+                        ForEach(categories) { category in
+                            Text(category.title)
+                                .tag(category as Category?)
+                        }
+                        Text("None")
+                            .tag(nil as Category?)
                     }
-                    Text("None")
-                        .tag(nil as Category?)
                 }
             }
             
