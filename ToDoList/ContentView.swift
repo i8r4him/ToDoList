@@ -16,19 +16,19 @@ struct ContentView: View {
     @State private var editItem: ToDoItem?
     @State private var showCreateCategory = false
     @State private var searchQuery = ""
-    
-    enum SortType: String, CaseIterable, Identifiable {
-        case title, date, category
-        var id: String { rawValue }
-    }
-
-    @State private var sortType: SortType = .date
+    @State private var selectedPhotoData: Data?
+    @State private var sortType: SortType = .title
     @State private var sortAscending: Bool = true
     
     @Query(filter: #Predicate { (item: ToDoItem) in
         item.isCompleted == false
     }) private var unsortedItems: [ToDoItem]
     
+    enum SortType: String, CaseIterable, Identifiable {
+        case title, date, category
+        var id: String { rawValue }
+    }
+
     var filteredItems: [ToDoItem] {
     let filtered = searchQuery.isEmpty ? unsortedItems : unsortedItems.filter {
         $0.title.localizedCaseInsensitiveContains(searchQuery) ||
@@ -45,47 +45,66 @@ struct ContentView: View {
                 } else {
                     List {
                         ForEach(filteredItems) { item in
-                            HStack {
-                                VStack(alignment: .leading) {
-                                    if item.isCritical {
-                                        Image(systemName: "exclamationmark.triangle.fill")
-                                            .foregroundColor(.red)
-                                            .font(.title2)
+                            VStack {
+                                HStack {
+                                    VStack(alignment: .leading) {
+                                        if item.isCritical {
+                                            Image(systemName: "exclamationmark.triangle.fill")
+                                                .foregroundColor(.red)
+                                                .font(.title2)
+                                                .bold()
+                                        }
+                                        
+                                        Text(item.title)
+                                            .font(.title)
                                             .bold()
+                                        
+                                        Text("\(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .shortened))")
+                                            .font(.callout)
+                                        
+                                        if let category = item.category {
+                                            Text(category.title)
+                                                .foregroundColor(.blue)
+                                                .padding(.horizontal)
+                                                .padding(.vertical, 4)
+                                                .background(
+                                                    Color.blue.opacity(0.1),
+                                                    in: RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                                )
+                                        }
+                                        
+                                        
+                                        
                                     }
                                     
-                                    Text(item.title)
-                                        .font(.title)
-                                        .bold()
+                                    Spacer()
                                     
-                                    Text("\(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .shortened))")
-                                        .font(.callout)
-                                    
-                                    if let category = item.category {
-                                        Text(category.title)
-                                            .foregroundColor(.blue)
-                                            .padding(.horizontal)
-                                            .padding(.vertical, 4)
-                                            .background(
-                                                Color.blue.opacity(0.1),
-                                                in: RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                            )
+                                    Button {
+                                        withAnimation {
+                                            item.isCompleted.toggle()
+                                        }
+                                    } label: {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundColor(item.isCompleted ? .green : .gray)
+                                            .font(.title)
                                     }
+                                    .buttonStyle(.plain)
                                 }
-                                
-                                Spacer()
-                                
-                                Button {
-                                    withAnimation {
-                                        item.isCompleted.toggle()
+                                                                
+                                if let selectedPhotoData = item.image,
+                                   let uiImage = UIImage(data: selectedPhotoData) {
+                                    HStack {
+                                        Image(uiImage: uiImage)
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(height: 120)
+                                            .clipped()
+                                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                                     }
-                                } label: {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundColor(item.isCompleted ? .green : .gray)
-                                        .font(.title)
+                                    .frame(maxWidth: .infinity)
                                 }
-                                .buttonStyle(.plain)
                             }
+                           
                             .swipeActions {
                                 Button(role: .destructive) {
                                     withAnimation {

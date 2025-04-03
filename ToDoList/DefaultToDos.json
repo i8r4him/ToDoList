@@ -1,0 +1,23 @@
+[
+    {
+        "title": "Sangria Time 🍹",
+        "isCritical": false,
+        "isCompleted": false
+    },
+    {
+        "title": "Get groceries 🛒",
+        "isCritical": true,
+        "isCompleted": false
+        "category": {
+            "title": "Shopping 🛒"
+        }
+    },
+    {
+        "title": "Read a book 📚",
+        "isCritical": false,
+        "isCompleted": false
+        "category": {
+            "title": "Personal 🏠"
+        }
+    }
+]

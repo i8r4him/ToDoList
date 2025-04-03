@@ -7,10 +7,12 @@
 
 import SwiftUI
 import SwiftData
+import PhotosUI
 
 struct UpdateToDoView: View {
     
     @State private var selectedCategory: Category?
+    @State private var selectedphoto: PhotosPickerItem?
     
     @Environment(\.dismiss) var dismiss
     
@@ -48,6 +50,32 @@ struct UpdateToDoView: View {
                     }
                 }
                 
+                Section("Select an image") {
+                    
+                    if let imageData = item.image,
+                       let uiImage = UIImage(data: imageData) {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxWidth: .infinity, maxHeight: 300)
+                    }
+                    
+                    PhotosPicker(selection: $selectedphoto,
+                                    matching: .images,
+                                 photoLibrary: .shared()) {
+                        Label("Select a photo", systemImage: "photo")
+                    }
+                    
+                    if selectedphoto != nil {
+                        Button(role: .destructive) {
+                            selectedphoto = nil
+                            item.image = nil
+                        } label: {
+                            Label("Remove Photo", systemImage: "trash")
+                        }
+                    }
+                }
+                
                 Section {
                     Button(action: {
                         item.category = selectedCategory
@@ -69,6 +97,11 @@ struct UpdateToDoView: View {
             .onAppear(perform: {
                 selectedCategory = item.category
             })
+            .task(id: selectedphoto) {
+                if let data = try? await selectedphoto?.loadTransferable(type: Data.self) {
+                    item.image = data
+                }
+            }
         }
     }
 }

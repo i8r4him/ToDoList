@@ -11,13 +11,14 @@ struct CategoryResponse: Decodable {
     let title: String
 }
 
-struct CategoryJSONDecoder {
-    static func decode(from fileName: String) -> [CategoryResponse] {
+struct DefaultJSON {
+    static func decode<T: Codable>(from fileName: String, type: T.Type) -> T? {
+        
         guard let url = Bundle.main.url(forResource: fileName, withExtension: "json"),
-              let data = try? Data(contentsOf: url),
-              let categories = try? JSONDecoder().decode([CategoryResponse].self, from: data) else {
-            return []
+                let data = try? Data(contentsOf: url),
+              let result = try? JSONDecoder().decode(T.self, from: data) else {
+            return nil
         }
-        return categories
+        return result
     }
 }
